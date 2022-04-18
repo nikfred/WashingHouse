@@ -43,6 +43,7 @@ class WashhouseController {
             const {washhouse_id} = req.params
             const {address, description, removeImg} = req.body
             const img = req?.files?.img
+            console.log(img)
             const washhouse = await washhouseService.update(washhouse_id, {address, description, removeImg}, img)
             return res.json(washhouse)
         } catch (e) {

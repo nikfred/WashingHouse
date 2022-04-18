@@ -3,11 +3,12 @@ const WashhouseAndService = require('../models/washhouseAndService')
 const serviceService = require('../services/serviceService')
 const fileService = require('../services/fileService')
 const ApiError = require("../error/ApiError");
+const WashhouseDto = require("../dtos/washhouseDto");
 
 class WashhouseService {
     async create(address, description = "", img = null, services = []) {
         if (await Washhouse.findOne({address})) {
-            throw ApiError.badRequest('Washhouse already exists')
+            throw ApiError.badRequest('Id already exists')
         }
         const images = []
         if (img) {
@@ -24,7 +25,7 @@ class WashhouseService {
     async getOne(id) {
         const washhouse = await Washhouse.findById(id)
         if (!washhouse) {
-            throw ApiError.notFound('Washhouse not found')
+            throw ApiError.notFound('Id not found')
         }
         const rawServices = (await WashhouseAndService.find({washhouse_id: id}, "service_id")).map(i => i.service_id)
         const services = []
@@ -37,11 +38,11 @@ class WashhouseService {
             }
             service = null
         }
-        return {washhouse, services}
+        return {washhouse: new WashhouseDto(washhouse), services}
     }
 
     async getAll() {
-        return Washhouse.find()
+        return (await Washhouse.find())?.map(i => new WashhouseDto(i))
     }
 
     async remove(id) {
@@ -52,7 +53,7 @@ class WashhouseService {
     async update(id, washhouseData, img = null) {
         let washhouse = await Washhouse.findById(id)
         if (!washhouse) {
-            throw ApiError.notFound('Washhouse not found')
+            throw ApiError.notFound('Id not found')
         }
         washhouseData.removeImg && await fileService.remove(washhouseData.removeImg)
         washhouseData = {
